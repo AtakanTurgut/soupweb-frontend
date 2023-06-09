@@ -1,43 +1,64 @@
 import React, { useState } from "react";
+import { signIn } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { PostWithoutAuth } from "../services/HttpService";
 
 const Login = () => {
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState("")
+    const [password, setPassword] = useState("")
+
+    const handleUsername = (value) => {
+        setUsername(value)
+    } 
+
+    const handlePassword = (value) => {
+        setPassword(value)
+    } 
+
+    const sendRequest = (path) => {
+        PostWithoutAuth(("/auth/"+path), {
+            userName : username, 
+            password : password,
+          })
+          .then((res) => res.json())
+          .then((result) => {localStorage.setItem("tokenKey",result.accessToken);
+                            localStorage.setItem("refreshKey",result.refreshToken);
+                            localStorage.setItem("currentUser",result.userId);
+                            localStorage.setItem("userName",username)})
+          .catch((err) => console.log(err))
+    }
+
+    const handleButton = (path) => {
+        sendRequest(path)
+        setUsername("")
+        setPassword("")
+        console.log(localStorage)
+    }
+  /* const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
 
-  const handleUsername = (event) => {
-    setUsername(event.target.value);
-  };
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-  const handlePassword = (event) => {
-    setPassword(event.target.value);
-  };
+    // Backend'e kullanıcı bilgilerini gönder
+    const response = await fetch("http://localhost:8080/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, password }),
+    });
 
-  // Login
-  const login = (event) => {
-    event.preventDefault(); // Formun otomatik submit olmasını engellemek için
-
-    const body = {
-      userName: username,
-      password: password,
-    };
-
-    PostWithoutAuth("/auth/login", body)
-      .then((response) => response.json())
-      .then((result) => {
-        localStorage.setItem("tokenKey", result.accessToken);
-        localStorage.setItem("refreshKey", result.refreshToken);
-        localStorage.setItem("currentUser", result.userId);
-        localStorage.setItem("userName", username);
-
-        // İşlemler tamamlandıktan sonra yönlendirme yapabilirsiniz
-        router.push("/"); // Örnek olarak "/dashboard" sayfasına yönlendiriliyor
-      })
-      .catch((error) => console.log(error));
-  };
+    if (response.ok) {
+      // Başarılı giriş durumunda ana sayfaya yönlendir
+      router.push("/");
+    } else {
+      // Hata durumunda kullanıcıya bilgi ver
+      alert("Giriş işlemi başarısız oldu.");
+    }
+  }; */
 
   return (
     <div className="flex justify-center items-center h-screen bg-orange-50">
@@ -52,7 +73,7 @@ const Login = () => {
         <div className="body mt-[10px]">
           <form className="flex w-full flex-col justify-center">
             <div className="mb-4">
-              <label className="block font-medium mb-2" htmlFor="username">
+              <label className="block font-medium mb-2" htmlFor="email">
                 E-posta
               </label>
               <input
@@ -64,7 +85,8 @@ const Login = () => {
                 required
                 placeholder="eposta@soupweb.com"
                 value={username}
-                onChange={handleUsername}
+                /* onChange={(e) => setUsername(e.target.value)} */
+                onChange = {(i) => handleUsername(i.target.value)}
               />
             </div>
             <div className="mb-4">
@@ -80,20 +102,22 @@ const Login = () => {
                 required
                 placeholder="············"
                 value={password}
-                onChange={handlePassword}
+                /* onChange={(e) => setPassword(e.target.value)} */
+                onChange = {(i) => handlePassword(i.target.value)}
               />
             </div>
             <div className="p-4">
               <button
                 className="bg-green-700 text-white py-2 px-4 rounded-md hover:bg-[#edaf32] focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50 cursor-pointer"
                 type="submit"
-                onClick={login}
+                onClick={() => handleButton("login")} // Giriş yapma işlemini başlatan fonksiyonu ekledik
               >
                 Giriş Yap
               </button>
-              veya
+                veya  
               <a
-                className="border border-gray-300 bg-white text-gray-800 py-2 px-4 rounded-md hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 cursor-pointer"
+                onClick={signIn}
+                className="border border-gray-300 bg-white text-gray-800 py-2 px-4 rounded-md hover:bg-blue-600  hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 cursor-pointer"
                 href="http://localhost:3000/#_=_"
               >
                 Facebook ile devam edin
